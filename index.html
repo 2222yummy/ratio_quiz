@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>비와 비율 문제 챌린지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F1FBF6;
+    --card:#FFFFFF;
+    --ink:#1B1B2F;
+    --ink-soft:#6C6C82;
+    --violet:#5B5FEF;
+    --violet-dark:#4245C4;
+    --yellow:#FFC93C;
+    --yellow-dark:#E0A800;
+    --coral:#FF6F91;
+    --coral-bg:#FFE7ED;
+    --mint:#2ED9A3;
+    --mint-bg:#DDF7EC;
+    --line:#E7E7F0;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 8% 12%, rgba(91,95,239,0.07), transparent 40%),
+      radial-gradient(circle at 92% 85%, rgba(255,201,60,0.10), transparent 40%),
+      var(--bg);
+    font-family:'Noto Sans KR', sans-serif;
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:28px 14px 60px;
+  }
+  .wrap{width:100%; max-width:520px;}
+
+  /* ---------- 공통 카드 ---------- */
+  .card{
+    background:var(--card);
+    border-radius:22px;
+    box-shadow:0 14px 34px rgba(27,27,47,0.10);
+    padding:28px 24px;
+  }
+
+  /* ---------- 시작 화면 ---------- */
+  .hero-emoji{font-size:40px; text-align:center; margin-bottom:4px;}
+  .title{
+    font-family:'Gaegu', sans-serif;
+    font-weight:700;
+    font-size:30px;
+    text-align:center;
+    color:var(--violet-dark);
+    margin:0 0 6px;
+  }
+  .subtitle{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:14px;
+    line-height:1.6;
+    margin:0 0 26px;
+  }
+  .nametag{
+    background:var(--yellow);
+    border-radius:16px;
+    padding:16px 18px;
+    position:relative;
+    margin-bottom:20px;
+  }
+  .nametag::before{
+    content:"";
+    position:absolute;
+    top:-9px; left:50%; transform:translateX(-50%);
+    width:18px; height:18px;
+    background:var(--ink);
+    border-radius:50%;
+    box-shadow:0 0 0 4px var(--bg);
+  }
+  .nametag label{
+    display:block; font-size:12px; font-weight:700; color:#6B5300;
+    margin-bottom:6px;
+  }
+  .nametag input{
+    width:100%; border:none; border-radius:10px; padding:10px 12px;
+    font-size:16px; font-family:'Noto Sans KR', sans-serif; font-weight:500;
+    background:#fff; color:var(--ink);
+  }
+  .nametag input:focus{outline:3px solid var(--violet); outline-offset:1px;}
+
+  .big-btn{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:14px;
+    font-size:17px;
+    font-weight:700;
+    font-family:'Noto Sans KR', sans-serif;
+    cursor:pointer;
+    background:var(--violet);
+    color:#fff;
+    box-shadow:0 4px 0 var(--violet-dark);
+  }
+  .big-btn:active{transform:translateY(3px); box-shadow:none;}
+  .big-btn:disabled{background:#C7C7E0; box-shadow:0 4px 0 #ADADCB; cursor:not-allowed;}
+
+  .info-row{
+    display:flex; gap:8px; margin-top:16px; flex-wrap:wrap;
+  }
+  .info-chip{
+    flex:1; min-width:120px;
+    background:var(--mint-bg); color:#0D7A56;
+    font-size:12px; font-weight:700;
+    padding:8px 10px; border-radius:10px; text-align:center;
+  }
+
+  /* ---------- 퀴즈 화면 ---------- */
+  .quiz-header{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:10px; padding:0 2px;
+  }
+  .greet{font-size:13px; color:var(--ink-soft);}
+  .greet b{color:var(--violet-dark);}
+  .counter{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px; font-weight:700; color:var(--violet-dark);
+  }
+
+  /* 띠그래프 스타일 진행 바 (비율 단원 특유의 시각자료를 그대로 진행바로 사용) */
+  .ribbon{
+    display:flex; gap:3px;
+    background:var(--line);
+    border-radius:8px;
+    padding:3px;
+    margin-bottom:22px;
+  }
+  .seg{
+    flex:1; height:14px; border-radius:5px;
+    background:#fff;
+    transition:background 0.25s ease;
+  }
+  .seg.current{background:var(--yellow);}
+  .seg.correct{background:var(--mint);}
+  .seg.retry{background:var(--coral);}
+
+  .q-tag{
+    display:inline-block;
+    font-size:11px; font-weight:700;
+    background:var(--violet); color:#fff;
+    padding:3px 10px; border-radius:999px;
+    margin-bottom:12px;
+  }
+  .q-text{
+    font-size:18px; font-weight:500; line-height:1.65;
+    margin:0 0 20px;
+  }
+  .q-text .num{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:700; color:var(--violet-dark);
+  }
+
+  .answer-row{
+    display:flex; gap:10px; margin-bottom:6px;
+  }
+  .answer-row input{
+    flex:1;
+    padding:13px 14px;
+    font-size:18px;
+    border:2px solid var(--line);
+    border-radius:12px;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:700;
+    color:var(--ink);
+  }
+  .answer-row input:focus{outline:none; border-color:var(--violet);}
+  .answer-unit{
+    display:flex; align-items:center;
+    font-size:15px; color:var(--ink-soft); font-weight:700;
+  }
+  .submit-btn{
+    margin-top:12px;
+    padding:14px;
+    width:100%;
+    border:none; border-radius:12px;
+    background:var(--violet); color:#fff;
+    font-size:16px; font-weight:700; cursor:pointer;
+    box-shadow:0 4px 0 var(--violet-dark);
+  }
+  .submit-btn:active{transform:translateY(3px); box-shadow:none;}
+
+  .feedback{
+    margin-top:16px;
+    padding:14px 16px;
+    border-radius:12px;
+    font-size:14px;
+    line-height:1.6;
+    display:none;
+  }
+  .feedback.show{display:block;}
+  .feedback.wrong{background:var(--coral-bg); color:#A3123B;}
+  .feedback.correct{background:var(--mint-bg); color:#0D7A56;}
+  .feedback strong{display:block; font-size:15px; margin-bottom:4px;}
+
+  .next-btn{
+    margin-top:12px; width:100%; padding:13px; border:none; border-radius:12px;
+    background:var(--mint); color:#08533A; font-weight:700; font-size:15px; cursor:pointer;
+    display:none;
+  }
+  .next-btn.show{display:block;}
+
+  /* ---------- 결과 화면 ---------- */
+  .result-emoji{font-size:44px; text-align:center;}
+  .result-score{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:40px; font-weight:700; text-align:center; color:var(--violet-dark);
+    margin:6px 0 2px;
+  }
+  .result-label{text-align:center; color:var(--ink-soft); font-size:13px; margin-bottom:20px;}
+  .result-msg{
+    background:var(--yellow);
+    border-radius:14px; padding:14px 16px;
+    font-size:14px; text-align:center; margin-bottom:20px; font-weight:500;
+  }
+  .result-actions{display:flex; gap:10px;}
+  .result-actions button{flex:1;}
+  .ghost-btn{
+    padding:14px; border-radius:12px; border:2px solid var(--line);
+    background:#fff; color:var(--ink-soft); font-weight:700; font-size:14px; cursor:pointer;
+  }
+
+  .teacher-link{
+    display:block; width:100%; margin-top:14px; background:none; border:none;
+    color:var(--ink-soft); font-size:12px; text-decoration:underline; cursor:pointer; padding:6px;
+  }
+  .hint-note{font-size:12px; color:#A3123B; text-align:center; min-height:16px; margin-top:8px;}
+  .ghost-btn.small{padding:8px 12px; font-size:12px; width:auto;}
+  .table-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:12px;}
+  .result-table{width:100%; border-collapse:collapse; font-size:13px;}
+  .result-table th{
+    background:var(--bg); text-align:left; padding:9px 10px; font-weight:700; color:var(--ink-soft);
+    position:sticky; top:0;
+  }
+  .result-table td{padding:9px 10px; border-top:1px solid var(--line);}
+  .result-table tr:nth-child(even){background:#FAFAFF;}
+
+  .hidden{display:none;}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 시작 화면 -->
+  <div class="card" id="startScreen">
+    <div class="hero-emoji">⚖️</div>
+    <h1 class="title">비와 비율 문제 챌린지</h1>
+    <p class="subtitle">비 · 비율 · 백분율 문제를 풀며 개념을 다져봐요.<br>한 세트는 10문제, 원할 때마다 새 세트에 도전할 수 있어요.</p>
+
+    <div class="nametag">
+      <label for="nameInput">내 이름표</label>
+      <input type="text" id="nameInput" placeholder="이름을 적어주세요" maxlength="12">
+    </div>
+
+    <button class="big-btn" id="startBtn" disabled>10문제 도전 시작!</button>
+
+    <div class="info-row">
+      <div class="info-chip">🔢 기초 · 기본 · 문장제 골고루</div>
+      <div class="info-chip">🔁 틀리면 힌트 보고 다시 도전</div>
+    </div>
+
+    <button class="teacher-link" id="teacherLinkBtn">🔒 선생님만 보기: 학생 결과 확인</button>
+  </div>
+
+  <!-- 선생님 암호 입력 화면 -->
+  <div class="card hidden" id="teacherGateScreen">
+    <h2 class="title" style="font-size:22px;">선생님 확인용 암호</h2>
+    <p class="subtitle" style="margin-bottom:16px;">학생들이 실수로 보지 않도록 걸어둔 간단한 암호예요.</p>
+    <div class="nametag" style="background:#EDEBFF;">
+      <label>암호 입력</label>
+      <input type="password" id="teacherCodeInput" placeholder="암호" inputmode="numeric">
+    </div>
+    <button class="big-btn" id="teacherEnterBtn">확인</button>
+    <button class="ghost-btn" id="teacherGateBackBtn" style="width:100%; margin-top:10px;">돌아가기</button>
+    <p class="hint-note" id="teacherGateError"></p>
+  </div>
+
+  <!-- 선생님 결과 화면 -->
+  <div class="card hidden" id="teacherScreen">
+    <div class="quiz-header">
+      <h2 class="title" style="font-size:20px; margin:0;">📋 학생 결과</h2>
+      <button class="ghost-btn small" id="teacherRefreshBtn">새로고침</button>
+    </div>
+    <p class="subtitle" id="teacherStatusLine" style="text-align:left; margin-bottom:14px;"></p>
+    <div class="table-wrap">
+      <table class="result-table" id="resultTable">
+        <thead>
+          <tr><th>이름</th><th>일시</th><th>점수</th><th>재도전 횟수</th></tr>
+        </thead>
+        <tbody id="resultTableBody"></tbody>
+      </table>
+    </div>
+    <div class="result-actions" style="margin-top:16px;">
+      <button class="ghost-btn" id="teacherCsvBtn">⬇ CSV로 내려받기</button>
+      <button class="ghost-btn" id="teacherBackBtn">닫기</button>
+    </div>
+  </div>
+
+  <!-- 퀴즈 화면 -->
+  <div class="card hidden" id="quizScreen">
+    <div class="quiz-header">
+      <span class="greet"><b id="quizName"></b>님, 화이팅!</span>
+      <span class="counter" id="quizCounter">1 / 10</span>
+    </div>
+
+    <div class="ribbon" id="ribbon"></div>
+
+    <span class="q-tag" id="qTag">기초</span>
+    <p class="q-text" id="qText">문제 불러오는 중...</p>
+
+    <div class="answer-row">
+      <input type="text" inputmode="decimal" id="answerInput" placeholder="답을 입력하세요" autocomplete="off">
+      <span class="answer-unit" id="answerUnit"></span>
+    </div>
+
+    <button class="submit-btn" id="submitBtn">정답 확인</button>
+
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="nextBtn">다음 문제로 →</button>
+  </div>
+
+  <!-- 결과 화면 -->
+  <div class="card hidden" id="resultScreen">
+    <div class="result-emoji" id="resultEmoji">🎉</div>
+    <div class="result-score" id="resultScore">0 / 10</div>
+    <p class="result-label">한 번에 맞힌 문제 수</p>
+    <p class="result-msg" id="resultMsg"></p>
+    <div class="result-actions">
+      <button class="ghost-btn" id="restartNameBtn">이름 다시 쓰기</button>
+      <button class="big-btn" id="retryBtn" style="flex:1;">새 10문제 도전!</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ===================== 문제 생성기 ===================== */
+function randInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function pick(arr){ return arr[randInt(0, arr.length-1)]; }
+function gcd(a,b){ return b===0 ? a : gcd(b, a%b); }
+function round2(n){ return Math.round(n*100)/100; }
+
+const NAMES = ['사탕','구슬','연필','귤','축구공','스티커','풍선','도토리'];
+const GROUPS = ['남학생','여학생','안경을 쓴 학생','왼손잡이 학생'];
+
+// 1. 전항/후항 구분 (객관식)
+function genRatioTerm(){
+  const a = randInt(2,12), b = randInt(2,12);
+  const askFront = Math.random() < 0.5;
+  const answer = askFront ? a : b;
+  const other = askFront ? b : a;
+  const choices = Math.random()<0.5 ? [answer, other] : [other, answer];
+  return {
+    tag:'기초', type:'choice',
+    text:`비 <span class="num">${a}:${b}</span> 에서 ${askFront ? '전항(앞에 있는 수)' : '후항(뒤에 있는 수)'}은 무엇인가요?`,
+    choices, answer:String(answer),
+    hint1:'비 a:b 에서 콜론(:) 앞의 수가 전항, 뒤의 수가 후항이에요.',
+    hint2:`${a}:${b} 을(를) 다시 천천히 순서대로 읽어보세요.`
+  };
+}
+
+// 2. 비율을 소수로
+function genRatioToDecimal(){
+  const totalOptions = [4,5,8,10,20,25,50];
+  const total = pick(totalOptions);
+  const part = randInt(1, total-1);
+  const item = pick(NAMES);
+  const answer = round2(part/total);
+  return {
+    tag:'기초', type:'input', unit:'',
+    text:`${item}이(가) 총 <span class="num">${total}</span>개 있고, 그중 <span class="num">${part}</span>개가 상자 안에 있습니다. 상자 안 ${item} 수의 비율을 소수로 나타내면 얼마인가요?`,
+    answer,
+    hint1:'비율 = 비교하는 양 ÷ 기준량 이에요. 여기서 비교하는 양과 기준량이 각각 무엇인지 찾아보세요.',
+    hint2:`${part} ÷ ${total} 을 계산해보세요.`
+  };
+}
+
+// 3. 소수 → 백분율
+function genDecimalToPercent(){
+  const d = round2(randInt(1,19)*0.05);
+  const answer = round2(d*100);
+  return {
+    tag:'기초', type:'input', unit:'%',
+    text:`비율 <span class="num">${d}</span> 을(를) 백분율로 나타내면 몇 %인가요? (% 기호는 빼고 숫자만 입력)`,
+    answer,
+    hint1:'비율에 100을 곱하면 백분율(%)이 돼요.',
+    hint2:`${d} × 100 을 계산해보세요.`
+  };
+}
+
+// 4. 백분율 → 소수
+function genPercentToDecimal(){
+  const p = randInt(1,19)*5;
+  const answer = round2(p/100);
+  return {
+    tag:'기초', type:'input', unit:'',
+    text:`<span class="num">${p}%</span> 를 소수로 나타내면 얼마인가요?`,
+    answer,
+    hint1:'백분율을 100으로 나누면 소수(비율)가 돼요.',
+    hint2:`${p} ÷ 100 을 계산해보세요.`
+  };
+}
+
+// 5. 비교하는 양 구하기
+function genFindCompared(){
+  const base = pick([20,40,50,100,200,300,400,500]);
+  const rate = round2(pick([0.1,0.15,0.2,0.25,0.3,0.4,0.5,0.6,0.75,0.8]));
+  const answer = round2(base*rate);
+  return {
+    tag:'기본', type:'input', unit:'',
+    text:`기준량이 <span class="num">${base}</span>이고 비율이 <span class="num">${rate}</span>일 때, 비교하는 양은 얼마인가요?`,
+    answer,
+    hint1:'비교하는 양 = 기준량 × 비율 이에요.',
+    hint2:`${base} × ${rate} 를 계산해보세요.`
+  };
+}
+
+// 6. 기준량 구하기
+function genFindBase(){
+  const rate = pick([0.1,0.2,0.25,0.4,0.5]);
+  const base = pick([20,40,60,80,100,120,200]);
+  const compared = round2(base*rate);
+  return {
+    tag:'기본', type:'input', unit:'',
+    text:`비교하는 양이 <span class="num">${compared}</span>이고 비율이 <span class="num">${rate}</span>일 때, 기준량은 얼마인가요?`,
+    answer: base,
+    hint1:'기준량 = 비교하는 양 ÷ 비율 이에요.',
+    hint2:`${compared} ÷ ${rate} 를 계산해보세요.`
+  };
+}
+
+// 7. 간단한 자연수의 비로 나타내기
+function genSimplifyRatio(){
+  let x = randInt(2,9), y = randInt(2,9);
+  while(gcd(x,y) !== 1){ x = randInt(2,9); y = randInt(2,9); }
+  const k = randInt(2,6);
+  const a = x*k, b = y*k;
+  const item1 = pick(NAMES), item2 = pick(NAMES.filter(n=>n!==item1));
+  return {
+    tag:'기본', type:'input', unit:'', textOnly:true,
+    text:`${item1} <span class="num">${a}</span>개와 ${item2} <span class="num">${b}</span>개가 있습니다. ${item1} 수와 ${item2} 수의 비를 가장 간단한 자연수의 비로 나타내면? (예: 3:2 형태로 입력)`,
+    answer:`${x}:${y}`,
+    hint1:'두 수를 같은 수로 나누어 더 작은 자연수의 비로 줄여보세요.',
+    hint2:`${a}와 ${b}의 최대공약수로 두 수를 각각 나누어보세요.`
+  };
+}
+
+// 8. 문장제 - 할인율
+function genWordDiscount(){
+  const price = pick([2000,4000,5000,8000,10000,20000,25000]);
+  const discount = pick([10,20,25,30,40,50]);
+  const sale = price*(1-discount/100);
+  return {
+    tag:'문장제', type:'input', unit:'%',
+    text:`정가 <span class="num">${price}</span>원인 물건을 <span class="num">${sale}</span>원에 할인 판매했습니다. 할인율은 정가의 몇 %인가요?`,
+    answer: discount,
+    hint1:'할인된 금액이 정가의 몇 %인지 구하는 문제예요. 먼저 할인된 금액(정가-판매가)을 구해보세요.',
+    hint2:`(${price} - ${sale}) ÷ ${price} × 100 을 계산해보세요.`
+  };
+}
+
+// 9. 문장제 - 성공률
+function genWordSuccessRate(){
+  const attempts = pick([4,5,8,10,20,25,50]);
+  const successRate = pick([0.2,0.4,0.5,0.6,0.75,0.8,1]);
+  let success = Math.round(attempts*successRate);
+  if(success===0) success = 1;
+  const percent = round2((success/attempts)*100);
+  return {
+    tag:'문장제', type:'input', unit:'%',
+    text:`농구 자유투를 <span class="num">${attempts}</span>번 던져 <span class="num">${success}</span>번 성공했습니다. 성공률은 몇 %인가요?`,
+    answer: percent,
+    hint1:'성공률 = 성공한 횟수 ÷ 전체 시도 횟수 × 100 이에요.',
+    hint2:`${success} ÷ ${attempts} × 100 을 계산해보세요.`
+  };
+}
+
+// 10. 문장제 - 학급 비율
+function genWordClassRatio(){
+  const totals = [20,25,40,50];
+  const total = pick(totals);
+  const count = randInt(Math.floor(total*0.2), Math.floor(total*0.8));
+  const percent = round2((count/total)*100);
+  const group = pick(GROUPS);
+  return {
+    tag:'문장제', type:'input', unit:'%',
+    text:`우리 반 학생 <span class="num">${total}</span>명 중 ${group} 수는 <span class="num">${count}</span>명입니다. ${group} 수는 전체 학생 수의 몇 %인가요?`,
+    answer: percent,
+    hint1:'비율 = 비교하는 양(그룹 학생 수) ÷ 기준량(전체 학생 수) 을 먼저 구한 뒤 100을 곱해요.',
+    hint2:`${count} ÷ ${total} × 100 을 계산해보세요.`
+  };
+}
+
+const GENERATORS = [
+  genRatioTerm, genRatioToDecimal, genDecimalToPercent, genPercentToDecimal,
+  genFindCompared, genFindBase, genSimplifyRatio,
+  genWordDiscount, genWordSuccessRate, genWordClassRatio
+];
+
+function generateSet(n){
+  const set = [];
+  let lastGen = null;
+  for(let i=0;i<n;i++){
+    let gen;
+    do{ gen = pick(GENERATORS); } while(gen === lastGen && GENERATORS.length>1);
+    lastGen = gen;
+    set.push(gen());
+  }
+  return set;
+}
+
+/* ===================== 앱 상태 & 로직 ===================== */
+let userName = '';
+let questions = [];
+let idx = 0;
+let attempts = 0;         // 현재 문제 시도 횟수
+let firstTryCorrectCount = 0;
+let segStatus = [];       // 각 문제 상태: 'pending' | 'correct' | 'retry'
+
+const $ = (id)=>document.getElementById(id);
+
+$('nameInput').addEventListener('input', ()=>{
+  $('startBtn').disabled = $('nameInput').value.trim().length === 0;
+});
+$('nameInput').addEventListener('keydown', (e)=>{
+  if(e.key==='Enter' && !$('startBtn').disabled) startQuiz();
+});
+$('startBtn').onclick = startQuiz;
+
+function startQuiz(){
+  userName = $('nameInput').value.trim() || '친구';
+  questions = generateSet(10);
+  idx = 0;
+  firstTryCorrectCount = 0;
+  segStatus = Array(10).fill('pending');
+  $('quizName').textContent = userName;
+  show('quizScreen');
+  renderRibbon();
+  renderQuestion();
+}
+
+function show(id){
+  ['startScreen','quizScreen','resultScreen'].forEach(s=>{
+    $(s).classList.toggle('hidden', s!==id);
+  });
+}
+
+function renderRibbon(){
+  const ribbon = $('ribbon');
+  ribbon.innerHTML = '';
+  segStatus.forEach((s,i)=>{
+    const seg = document.createElement('div');
+    seg.className = 'seg' + (i===idx ? ' current' : '') + (s==='correct' ? ' correct' : '') + (s==='retry' ? ' retry' : '');
+    ribbon.appendChild(seg);
+  });
+}
+
+function renderQuestion(){
+  attempts = 0;
+  const q = questions[idx];
+  $('quizCounter').textContent = `${idx+1} / 10`;
+  $('qTag').textContent = q.tag;
+  $('qText').innerHTML = q.text;
+  $('answerInput').value = '';
+  $('answerUnit').textContent = q.unit || '';
+  $('feedback').className = 'feedback';
+  $('feedback').textContent = '';
+  $('nextBtn').classList.remove('show');
+  $('submitBtn').style.display = 'block';
+  $('answerInput').disabled = false;
+  renderRibbon();
+  setTimeout(()=>$('answerInput').focus(), 50);
+}
+
+function checkAnswer(userVal, q){
+  if(typeof q.answer === 'string'){
+    const norm = s => s.replace(/\s+/g,'').replace(/：/g,':');
+    return norm(userVal) === norm(q.answer);
+  }
+  const num = parseFloat(userVal.replace(/,/g,''));
+  if(isNaN(num)) return false;
+  return Math.abs(num - q.answer) < 0.01;
+}
+
+$('submitBtn').onclick = submitAnswer;
+$('answerInput').addEventListener('keydown', (e)=>{
+  if(e.key==='Enter') submitAnswer();
+});
+
+function submitAnswer(){
+  const val = $('answerInput').value.trim();
+  if(!val) return;
+  const q = questions[idx];
+  const fb = $('feedback');
+
+  if(checkAnswer(val, q)){
+    if(attempts === 0) firstTryCorrectCount++;
+    segStatus[idx] = 'correct';
+    fb.className = 'feedback show correct';
+    fb.innerHTML = `<strong>정답이에요! 참 잘했어요 🎉</strong>${attempts>0 ? '다시 도전해서 맞혔어요. 대단해요!' : '한 번에 맞혔어요!'}`;
+    $('submitBtn').style.display = 'none';
+    $('answerInput').disabled = true;
+    $('nextBtn').classList.add('show');
+    renderRibbon();
+  }else{
+    attempts++;
+    segStatus[idx] = 'retry';
+    fb.className = 'feedback show wrong';
+    const hint = attempts === 1 ? q.hint1 : q.hint2;
+    fb.innerHTML = `<strong>아직이에요, 다시 한번 생각해볼까요? 🤔</strong>${hint}`;
+    renderRibbon();
+    $('answerInput').select();
+  }
+}
+
+$('nextBtn').onclick = ()=>{
+  if(idx < questions.length-1){
+    idx++;
+    renderQuestion();
+  }else{
+    showResult();
+  }
+};
+
+function showResult(){
+  show('resultScreen');
+  $('resultScore').textContent = `${firstTryCorrectCount} / 10`;
+  let emoji, msg;
+  if(firstTryCorrectCount >= 9){ emoji='🏆'; msg='최고예요! 비와 비율을 완벽하게 이해하고 있어요.'; }
+  else if(firstTryCorrectCount >= 7){ emoji='🌟'; msg='아주 잘했어요! 조금만 더 연습하면 완벽해질 거예요.'; }
+  else if(firstTryCorrectCount >= 4){ emoji='💪'; msg='잘하고 있어요! 틀렸던 유형을 한 번 더 복습해봐요.'; }
+  else{ emoji='🌱'; msg='시작이 반이에요! 새 문제로 한 번 더 연습해봐요.'; }
+  $('resultEmoji').textContent = emoji;
+  $('resultMsg').textContent = msg;
+}
+
+$('retryBtn').onclick = startQuiz;
+$('restartNameBtn').onclick = ()=>{
+  $('nameInput').value = '';
+  $('startBtn').disabled = true;
+  show('startScreen');
+};
+</script>
+</body>
+</html>
